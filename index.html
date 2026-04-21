@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>KaziLink - Kenyan Creatives Marketplace | Producers, Videographers & Designers</title>
+    <!-- Tailwind CSS + Font Awesome + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .chat-scroll { max-height: 320px; overflow-y: auto; }
+        .booking-scroll { max-height: 220px; overflow-y: auto; }
+        .rating-star { cursor: pointer; transition: 0.1s; }
+        .modal-transition { transition: opacity 0.2s ease; }
+        /* custom scroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Main App Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Header + Branding -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-gray-200 pb-5 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-green-700"><i class="fas fa-handshake mr-2 text-green-600"></i>KaziLink</h1>
+                <p class="text-gray-500 text-sm">Kenya's creative marketplace — producers, videographers & designers</p>
+            </div>
+            <div class="mt-3 md:mt-0 flex items-center space-x-3 text-sm bg-white px-4 py-2 rounded-full shadow-sm">
+                <i class="fas fa-map-marker-alt text-green-600"></i>
+                <span class="font-medium">Nairobi · Mombasa · Kisumu</span>
+                <i class="fas fa-mobile-alt text-green-600 ml-2"></i>
+                <span>M-Pesa Ready</span>
+            </div>
+        </div>
+
+        <!-- 2-COLUMN LAYOUT: LEFT = providers list + search, RIGHT = messaging+booking panel -->
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- LEFT COLUMN: Providers Directory + Location Search -->
+            <div class="lg:w-2/3 w-full">
+                <!-- Filters Bar: location search + category chips -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-grow">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="locationSearch" placeholder="Search by location (e.g., Nairobi, Mombasa, Kisumu, Nakuru)" class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-200 focus:border-green-400 outline-none">
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <button data-category="all" class="cat-filter active-cat px-4 py-2 rounded-full text-sm font-medium bg-green-600 text-white shadow-sm">All</button>
+                            <button data-category="Producer" class="cat-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-green-100">🎬 Producers</button>
+                            <button data-category="Videographer" class="cat-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-green-100">📹 Videographers</button>
+                            <button data-category="Designer" class="cat-filter px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-green-100">🎨 Designers</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Provider Grid / Cards -->
+                <div id="providersGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- dynamic providers injected -->
+                </div>
+                <!-- Empty state -->
+                <div id="noProvidersMsg" class="hidden text-center py-12 bg-white rounded-xl mt-4">
+                    <i class="fas fa-map-marked-alt text-4xl text-gray-300 mb-2"></i>
+                    <p class="text-gray-500">No creatives found in this location. Try another city!</p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Messaging + Booking System (Active provider) -->
+            <div class="lg:w-1/3 w-full">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 sticky top-6 overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-700 to-green-600 px-5 py-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="font-bold text-lg"><i class="fas fa-comment-dots mr-2"></i>Chat & Book</h2>
+                                <p id="activeProviderName" class="text-xs text-green-100 mt-0.5">Select a creative to start</p>
+                            </div>
+                            <i class="fas fa-exchange-alt text-green-200 text-xl"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="rightPanelContent" class="p-5">
+                        <!-- dynamic content: messaging thread, booking form, booking list -->
+                        <div class="text-center py-12 text-gray-400">
+                            <i class="fas fa-user-friends text-5xl mb-3"></i>
+                            <p>Click "Connect & Book" on any professional</p>
+                            <p class="text-sm mt-1">Start conversation, request service & pay via M-Pesa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Section (Marketplace Architecture) -->
+        <div class="mt-12 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-cogs text-green-600 text-xl"></i>
+                <h3 class="text-xl font-bold text-gray-800">Marketplace Architecture Overview</h3>
+                <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Kenyan-Focused</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="border-l-4 border-green-500 pl-4">
+                    <div class="font-semibold text-gray-800"><i class="fas fa-layer-group mr-1"></i> Frontend Modules</div>
+                    <ul class="mt-2 space-y-1 text-gray-600">
+                        <li>• Location-based search + filters</li>
+                        <li>• Dynamic provider profiles & ratings</li>
+                        <li>• Real-time messaging system (simulated)</li>
+                        <li>• Booking engine & status tracking</li>
+                        <li>• M-Pesa payment simulation (STK push)</li>
+                    </ul>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                    <div class="font-semibold text-gray-800"><i class="fas fa-exchange-alt mr-1"></i> Data Flow</div>
+                    <ul class="mt-2 space-y-1 text-gray-600">
+                        <li>User → Select Provider → Chat / Booking Request → Booking stored → M-Pesa payment → Booking status paid</li>
+                        <li>Ratings update provider avg & reviews</li>
+                        <li>Location filter re-renders provider grid</li>
+                    </ul>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                    <div class="font-semibold text-gray-800"><i class="fas fa-phone-alt mr-1"></i> M-Pesa Simulation</div>
+                    <ul class="mt-2 space-y-1 text-gray-600">
+                        <li>• Lipa Na M-Pesa (Buy Goods) flow</li>
+                        <li>• Real-time phone validation (07XX)</li>
+                        <li>• Success transaction ID + confirmation</li>
+                        <li>• Fully front-end demo ready for integration</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-dashed text-center text-xs text-gray-400 flex justify-center gap-4">
+                <span><i class="fas fa-star text-yellow-500"></i> Ratings system</span>
+                <span><i class="fas fa-map-pin text-red-500"></i> Geolocation ready</span>
+                <span><i class="fas fa-calendar-check"></i> Booking + Messaging hybrid</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Rating Modal (for detailed profile & rating submission) -->
+    <div id="profileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden transition-all">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-xl font-bold" id="modalProviderName">Profile</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="modalContent" class="py-4">
+                <!-- dynamic profile details + rating form -->
+            </div>
+            <div class="mt-3 text-right">
+                <button id="modalCloseFooter" class="px-4 py-2 bg-gray-200 rounded-lg">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- M-Pesa Payment Modal -->
+    <div id="mpesaModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden transition-all">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 p-6 shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-green-700"><i class="fas fa-money-bill-wave"></i> M-Pesa Payment</h3>
+                <button id="closeMpesaModal" class="text-gray-400"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="mpesaBody" class="mt-4 space-y-3">
+                <p class="text-gray-600">Amount: <strong id="mpesaAmount">KES 0</strong></p>
+                <input type="tel" id="mpesaPhone" placeholder="M-Pesa number (e.g., 0712345678)" class="w-full border rounded-lg p-2.5">
+                <button id="confirmMpesaBtn" class="w-full bg-green-600 text-white py-2.5 rounded-xl font-semibold">Confirm Payment</button>
+                <p class="text-xs text-gray-400 text-center">Simulated STK Push - demo environment</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- KENYAN CREATIVES DATA (producers, videographers, designers) ----------
+        let providers = [
+            { id: 1, name: "Amina Wanjiku", role: "Producer", category: "Producer", location: "Nairobi, Westlands", rating: 4.8, reviewsCount: 124, avatar: "🎧", bio: "Award-winning music & commercial producer. 10+ years experience.", priceRange: "15k-50k KES", reviews: [{ user: "John", rating: 5, comment: "Top tier production!" }, { user: "Grace", rating: 4.5, comment: "Great communication" }] },
+            { id: 2, name: "Brian Otieno", role: "Videographer", category: "Videographer", location: "Mombasa, Nyali", rating: 4.9, reviewsCount: 89, avatar: "📹", bio: "Cinematic wedding & corporate videos. 4K drone shots.", priceRange: "20k-80k KES", reviews: [{ user: "Zahra", rating: 5, comment: "Amazing drone footage" }] },
+            { id: 3, name: "Cynthia Muthoni", role: "UI/UX Designer", category: "Designer", location: "Nairobi, Kilimani", rating: 4.7, reviewsCount: 210, avatar: "🎨", bio: "Creative designer for web & mobile apps. Figma expert.", priceRange: "10k-35k KES", reviews: [{ user: "Kelvin", rating: 5, comment: "Pixel perfect designs" }] },
+            { id: 4, name: "David Kipchoge", role: "Video Producer", category: "Producer", location: "Nakuru", rating: 4.5, reviewsCount: 56, avatar: "🎬", bio: "Documentary & brand storytelling specialist.", priceRange: "25k-60k KES", reviews: [] },
+            { id: 5, name: "Esther Naliaka", role: "Graphic Designer", category: "Designer", location: "Kisumu", rating: 4.6, reviewsCount: 43, avatar: "🖌️", bio: "Logo, branding & social media creatives.", priceRange: "5k-20k KES", reviews: [] },
+            { id: 6, name: "Felix Mwangi", role: "Freelance Videographer", category: "Videographer", location: "Nairobi, CBD", rating: 4.4, reviewsCount: 112, avatar: "🎥", bio: "Event coverage, interviews, music videos.", priceRange: "15k-45k KES", reviews: [] },
+            { id: 7, name: "Grace Achieng", role: "Music Producer", category: "Producer", location: "Kisumu", rating: 4.9, reviewsCount: 78, avatar: "🎹", bio: "Afrobeat & gospel producer. Studio owner.", priceRange: "12k-40k KES", reviews: [] }
+        ];
+
+        // Normalize rating calculation for each provider based on reviews array
+        function updateAvgRating(provider) {
+            if (provider.reviews.length === 0) { provider.rating = 0; provider.reviewsCount = 0; return; }
+            let sum = provider.reviews.reduce((acc, r) => acc + r.rating, 0);
+            provider.rating = parseFloat((sum / provider.reviews.length).toFixed(1));
+            provider.reviewsCount = provider.reviews.length;
+        }
+        providers.forEach(p => updateAvgRating(p));
+
+        // State management
+        let activeProviderId = null;           // currently selected for messaging/booking
+        let messagesMap = new Map();            // providerId -> array of {sender, text, timestamp}
+        let bookingsMap = new Map();             // providerId -> array of booking objects { id, description, amount, status, date, createdAt }
+        
+        // initialize some demo messages per provider
+        providers.forEach(prov => {
+            if (!messagesMap.has(prov.id)) {
+                messagesMap.set(prov.id, [
+                    { sender: "provider", text: `Hi there! I'm ${prov.name}. How can I help with your creative project?`, timestamp: new Date(Date.now() - 3600000).toLocaleTimeString() }
+                ]);
+            }
+            if (!bookingsMap.has(prov.id)) bookingsMap.set(prov.id, []);
+        });
+        
+        // Global filter state
+        let currentLocationFilter = "";
+        let currentCategoryFilter = "all";
+
+        // Helper functions
+        function renderStars(rating) {
+            let full = Math.floor(rating);
+            let half = (rating % 1) >= 0.5;
+            let stars = '';
+            for (let i = 0; i < full; i++) stars += '<i class="fas fa-star text-yellow-400 text-sm"></i>';
+            if (half) stars += '<i class="fas fa-star-half-alt text-yellow-400 text-sm"></i>';
+            while (stars.split('fa-star').length - 1 + (half?1:0) < 5) stars += '<i class="far fa-star text-yellow-400 text-sm"></i>';
+            return stars;
+        }
+
+        // Filter providers by location (case-insensitive) + category
+        function getFilteredProviders() {
+            return providers.filter(prov => {
+                const locationMatch = currentLocationFilter === "" || prov.location.toLowerCase().includes(currentLocationFilter.toLowerCase());
+                const categoryMatch = currentCategoryFilter === "all" || prov.category === currentCategoryFilter;
+                return locationMatch && categoryMatch;
+            });
+        }
+
+        // Render left grid
+        function renderProviderGrid() {
+            const filtered = getFilteredProviders();
+            const grid = document.getElementById('providersGrid');
+            const noMsg = document.getElementById('noProvidersMsg');
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noMsg.classList.remove('hidden');
+                return;
+            }
+            noMsg.classList.add('hidden');
+            grid.innerHTML = filtered.map(prov => `
+                <div class="bg-white rounded-xl shadow-sm border hover:shadow-md transition p-4 flex flex-col">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl">${prov.avatar}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-gray-800">${prov.name}</h3>
+                                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">${prov.role}</span>
+                            </div>
+                            <div class="flex items-center gap-1 mt-0.5">${renderStars(prov.rating)} <span class="text-xs text-gray-500 ml-1">(${prov.reviewsCount})</span></div>
+                            <div class="text-xs text-gray-500 mt-1"><i class="fas fa-map-marker-alt mr-1"></i> ${prov.location}</div>
+                            <div class="text-xs text-green-600 font-medium mt-1">💰 ${prov.priceRange}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="viewProfile(${prov.id})" class="text-sm text-gray-600 bg-gray-100 px-3 py-1.5 rounded-lg flex-1"><i class="far fa-id-card"></i> Profile</button>
+                        <button onclick="setActiveProvider(${prov.id})" class="text-sm bg-green-600 text-white px-3 py-1.5 rounded-lg flex-1"><i class="fas fa-comment"></i> Connect & Book</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Set active provider & re-render right panel
+        window.setActiveProvider = function(providerId) {
+            activeProviderId = providerId;
+            const provider = providers.find(p => p.id === providerId);
+            if (provider) {
+                document.getElementById('activeProviderName').innerHTML = `<i class="fas fa-user-circle"></i> ${provider.name} (${provider.role})`;
+            }
+            renderRightPanel();
+        };
+
+        // Render right panel (messaging + booking system)
+        function renderRightPanel() {
+            const container = document.getElementById('rightPanelContent');
+            if (!activeProviderId) {
+                container.innerHTML = `<div class="text-center py-12 text-gray-400"><i class="fas fa-user-friends text-5xl mb-3"></i><p>Click "Connect & Book" on any professional</p><p class="text-sm mt-1">Start conversation, request service & pay via M-Pesa</p></div>`;
+                return;
+            }
+            const provider = providers.find(p => p.id === activeProviderId);
+            if (!provider) return;
+            const messages = messagesMap.get(activeProviderId) || [];
+            const bookings = bookingsMap.get(activeProviderId) || [];
+            
+            // message thread html
+            const messagesHtml = messages.map(msg => `
+                <div class="mb-3 ${msg.sender === 'user' ? 'text-right' : 'text-left'}">
+                    <div class="inline-block max-w-[85%] px-3 py-2 rounded-2xl ${msg.sender === 'user' ? 'bg-green-600 text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}">
+                        <span class="text-sm break-words">${escapeHtml(msg.text)}</span>
+                        <div class="text-[10px] opacity-70 mt-0.5">${msg.timestamp || 'just now'}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            const bookingsHtml = bookings.length === 0 ? '<p class="text-gray-400 text-sm italic">No bookings yet. Request a service below.</p>' : 
+                bookings.map(b => `
+                    <div class="border rounded-lg p-2 mb-2 text-sm ${b.status === 'paid' ? 'bg-green-50 border-green-200' : 'bg-yellow-50'}">
+                        <div class="flex justify-between font-medium"><span>📝 ${b.description.substring(0, 35)}</span> <span class="font-bold">KES ${b.amount}</span></div>
+                        <div class="text-xs text-gray-500">📅 ${b.date || 'Flexible'} • Status: ${b.status === 'paid' ? '✅ Paid' : '⏳ Pending Payment'}</div>
+                        ${b.status !== 'paid' ? `<button onclick="initiatePayment(${activeProviderId}, ${b.id}, ${b.amount})" class="mt-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-md w-full">💳 Pay with M-Pesa</button>` : `<span class="text-green-600 text-xs"><i class="fas fa-check-circle"></i> Payment completed</span>`}
+                    </div>
+                `).join('');
+            
+            container.innerHTML = `
+                <div class="mb-5 border-b pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">${provider.avatar}</span>
+                        <div><h3 class="font-bold">${provider.name}</h3><div class="flex text-xs">${renderStars(provider.rating)} <span class="ml-1">${provider.rating}</span></div></div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="text-sm font-semibold flex items-center gap-1"><i class="fas fa-comments"></i> Messaging</label>
+                    <div class="chat-scroll bg-gray-50 rounded-xl p-3 mt-1 h-64 overflow-y-auto" id="chatMessagesArea">${messagesHtml || '<p class="text-gray-400 text-center">No messages yet</p>'}</div>
+                    <div class="flex gap-2 mt-2">
+                        <input type="text" id="newMessageInput" placeholder="Type a message..." class="flex-1 border rounded-xl px-3 py-2 text-sm">
+                        <button onclick="sendMessage()" class="bg-green-600 text-white px-4 rounded-xl text-sm"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+                <div class="mb-4 border-t pt-3">
+                    <label class="text-sm font-semibold flex items-center gap-1"><i class="fas fa-calendar-alt"></i> Request Booking</label>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <input type="date" id="bookingDate" class="border rounded-lg p-1.5 text-sm">
+                        <input type="number" id="bookingAmount" placeholder="Amount (KES)" class="border rounded-lg p-1.5 text-sm" value="5000">
+                    </div>
+                    <textarea id="bookingDesc" rows="2" placeholder="Describe your project needs..." class="border rounded-lg w-full mt-2 p-2 text-sm"></textarea>
+                    <button onclick="createBooking()" class="mt-2 bg-blue-600 text-white w-full py-2 rounded-xl text-sm font-medium"><i class="fas fa-check-circle"></i> Request Booking</button>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold"><i class="fas fa-receipt"></i> Bookings & Payments</label>
+                    <div class="booking-scroll max-h-48 overflow-y-auto mt-1 space-y-1">${bookingsHtml}</div>
+                </div>
+            `;
+            // scroll chat to bottom
+            setTimeout(() => {
+                const chatDiv = document.getElementById('chatMessagesArea');
+                if(chatDiv) chatDiv.scrollTop = chatDiv.scrollHeight;
+            }, 50);
+        }
+        
+        // send message + auto reply (simulate provider response)
+        window.sendMessage = function() {
+            if (!activeProviderId) return alert("Please select a provider first");
+            const input = document.getElementById('newMessageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const messages = messagesMap.get(activeProviderId);
+            const newMsg = { sender: "user", text: text, timestamp: new Date().toLocaleTimeString() };
+            messages.push(newMsg);
+            messagesMap.set(activeProviderId, messages);
+            input.value = '';
+            renderRightPanel();
+            // Auto reply from provider after 800ms
+            setTimeout(() => {
+                const autoReply = { sender: "provider", text: `Thank you for reaching out! I'll respond shortly regarding "${text.substring(0, 40)}". Let's discuss your creative vision.`, timestamp: new Date().toLocaleTimeString() };
+                const updatedMsgs = messagesMap.get(activeProviderId);
+                updatedMsgs.push(autoReply);
+                messagesMap.set(activeProviderId, updatedMsgs);
+                renderRightPanel();
+            }, 800);
+        };
+        
+        // Create booking request
+        window.createBooking = function() {
+            if (!activeProviderId) return alert("Select a provider");
+            const date = document.getElementById('bookingDate').value || "To be confirmed";
+            let amount = parseInt(document.getElementById('bookingAmount').value);
+            if (isNaN(amount) || amount <= 0) amount = 3000;
+            const desc = document.getElementById('bookingDesc').value.trim() || "Creative service request";
+            const newBooking = {
+                id: Date.now(),
+                description: desc,
+                amount: amount,
+                date: date,
+                status: "pending_payment",
+                createdAt: new Date().toISOString()
+            };
+            const bookings = bookingsMap.get(activeProviderId);
+            bookings.push(newBooking);
+            bookingsMap.set(activeProviderId, bookings);
+            document.getElementById('bookingDesc').value = '';
+            // Add system message about booking request
+            const messages = messagesMap.get(activeProviderId);
+            messages.push({ sender: "user", text: `📅 BOOKING REQUEST: ${desc} | KES ${amount} on ${date}`, timestamp: new Date().toLocaleTimeString() });
+            messagesMap.set(activeProviderId, messages);
+            renderRightPanel();
+            alert(`✅ Booking request sent to ${providers.find(p=>p.id===activeProviderId).name}! You can now pay via M-Pesa.`);
+        };
+        
+        // M-Pesa simulation modal
+        let pendingBooking = { providerId: null, bookingId: null, amount: 0 };
+        window.initiatePayment = function(providerId, bookingId, amount) {
+            pendingBooking = { providerId, bookingId, amount };
+            document.getElementById('mpesaAmount').innerText = `KES ${amount}`;
+            document.getElementById('mpesaPhone').value = "0712345678";
+            document.getElementById('mpesaModal').classList.remove('hidden');
+        };
+        
+        function closeMpesaModal() { document.getElementById('mpesaModal').classList.add('hidden'); }
+        document.getElementById('closeMpesaModal').addEventListener('click', closeMpesaModal);
+        document.getElementById('confirmMpesaBtn').addEventListener('click', () => {
+            const phone = document.getElementById('mpesaPhone').value.trim();
+            if (!phone.match(/^07\d{8}$/)) {
+                alert("Please enter valid M-Pesa number (07XXXXXXXX)");
+                return;
+            }
+            // simulate M-Pesa transaction
+            setTimeout(() => {
+                const { providerId, bookingId, amount } = pendingBooking;
+                if (providerId && bookingId) {
+                    const bookings = bookingsMap.get(providerId);
+                    const booking = bookings.find(b => b.id === bookingId);
+                    if (booking && booking.status === 'pending_payment') {
+                        booking.status = 'paid';
+                        bookingsMap.set(providerId, bookings);
+                        // add payment confirmation message
+                        const messages = messagesMap.get(providerId);
+                        messages.push({ sender: "system", text: `✅ M-Pesa payment of KES ${amount} received. Transaction ID: MPESA${Math.floor(Math.random()*1000000)}. Booking confirmed!`, timestamp: new Date().toLocaleTimeString() });
+                        messagesMap.set(providerId, messages);
+                        if (activeProviderId === providerId) renderRightPanel();
+                        alert(`🎉 Payment successful! KES ${amount} paid to ${providers.find(p=>p.id===providerId).name}.`);
+                    } else alert("Booking already paid or invalid.");
+                }
+                closeMpesaModal();
+            }, 300);
+        });
+        
+        // Profile modal: detailed view + rate provider
+        window.viewProfile = function(providerId) {
+            const provider = providers.find(p => p.id === providerId);
+            if (!provider) return;
+            document.getElementById('modalProviderName').innerText = provider.name;
+            const reviewList = provider.reviews.map(r => `<div class="border-b pb-2 mb-2"><div class="flex items-center">${renderStars(r.rating)} <span class="text-xs ml-2">${r.user}</span></div><p class="text-sm text-gray-600">${r.comment}</p></div>`).join('');
+            if(reviewList === '') reviewList = '<p class="text-gray-400 text-sm">No reviews yet. Be the first to rate!</p>';
+            document.getElementById('modalContent').innerHTML = `
+                <div class="flex items-center gap-3"><span class="text-4xl">${provider.avatar}</span><div><p class="font-medium">${provider.role} • ${provider.location}</p><p class="text-sm text-gray-600">${provider.bio}</p><div class="mt-1">${renderStars(provider.rating)} (${provider.reviewsCount} reviews)</div></div></div>
+                <div class="mt-4"><p class="font-semibold">💰 Price guide: ${provider.priceRange}</p></div>
+                <div class="mt-4"><label class="font-semibold">Leave a rating & review</label><div id="starRatingWidget" class="flex gap-1 my-2"></div><textarea id="reviewComment" rows="2" class="w-full border rounded p-2 text-sm" placeholder="Share your experience..."></textarea><button onclick="submitRating(${provider.id})" class="mt-2 bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-sm">Submit Rating</button></div>
+                <div class="mt-4"><label class="font-semibold">Client reviews</label><div class="max-h-40 overflow-y-auto mt-2">${reviewList}</div></div>
+            `;
+            // generate star rating widget
+            const starContainer = document.getElementById('starRatingWidget');
+            let selectedRating = 0;
+            starContainer.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('i');
+                star.className = 'far fa-star text-2xl text-yellow-400 cursor-pointer rating-star';
+                star.setAttribute('data-value', i);
+                star.onclick = () => {
+                    selectedRating = i;
+                    document.querySelectorAll('#starRatingWidget i').forEach((s, idx) => {
+                        if (idx < i) s.className = 'fas fa-star text-2xl text-yellow-400 rating-star';
+                        else s.className = 'far fa-star text-2xl text-yellow-400 rating-star';
+                    });
+                };
+                starContainer.appendChild(star);
+            }
+            window.selectedRatingValue = () => selectedRating;
+            document.getElementById('profileModal').classList.remove('hidden');
+        };
+        
+        window.submitRating = function(providerId) {
+            const starsSelected = document.querySelectorAll('#starRatingWidget i.fa-star').length;
+            let ratingValue = starsSelected;
+            if (ratingValue === 0) { alert("Please select star rating"); return; }
+            const comment = document.getElementById('reviewComment').value.trim() || "Great professional!";
+            const provider = providers.find(p => p.id === providerId);
+            provider.reviews.push({ user: "You", rating: ratingValue, comment: comment });
+            updateAvgRating(provider);
+            renderProviderGrid();
+            if(activeProviderId === providerId) renderRightPanel();
+            document.getElementById('profileModal').classList.add('hidden');
+            alert(`Thank you! New average rating: ${provider.rating}⭐`);
+        };
+        
+        function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+        
+        // Event listeners for search & category filters
+        document.getElementById('locationSearch').addEventListener('input', (e) => {
+            currentLocationFilter = e.target.value;
+            renderProviderGrid();
+        });
+        document.querySelectorAll('.cat-filter').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.cat-filter').forEach(b => { b.classList.remove('active-cat','bg-green-600','text-white'); b.classList.add('bg-gray-100','text-gray-700'); });
+                btn.classList.add('active-cat','bg-green-600','text-white');
+                currentCategoryFilter = btn.getAttribute('data-category');
+                renderProviderGrid();
+            });
+        });
+        
+        // Modal close handlers
+        document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('profileModal').classList.add('hidden'));
+        document.getElementById('modalCloseFooter').addEventListener('click', () => document.getElementById('profileModal').classList.add('hidden'));
+        window.onclick = function(e) { if(e.target === document.getElementById('profileModal')) document.getElementById('profileModal').classList.add('hidden'); if(e.target === document.getElementById('mpesaModal')) document.getElementById('mpesaModal').classList.add('hidden'); };
+        
+        // initial render
+        renderProviderGrid();
+        // default select first provider as active for demo
+        if(providers.length) setActiveProvider(providers[0].id);
+    </script>
+</body>
+</html>
